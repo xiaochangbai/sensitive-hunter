@@ -12,11 +12,11 @@ import java.util.List;
  *3
  */
 @ThreadSafe
-public class WordAllowSystem implements IWordAllow {
+public class SystemDefaultWordAllow implements IWordAllow {
 
     @Override
     public List<String> allow() {
-        return FileUtils.readAllLinesForZip("allow.zip");
+        return FileUtils.readAllLinesForZip(SystemDefaultWordAllow.class.getResourceAsStream("/allow.zip"));
     }
 
 }

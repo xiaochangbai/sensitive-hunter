@@ -4,7 +4,7 @@ import io.xiaochangbai.sensitive.common.core.ICharFormat;
 import io.xiaochangbai.sensitive.common.utils.StringUtil;
 import io.xiaochangbai.sensitive.core.api.*;
 import io.xiaochangbai.sensitive.core.config.SensitiveWordConfig;
-import io.xiaochangbai.sensitive.core.support.map.SensitiveWordDefaultHandler;
+import io.xiaochangbai.sensitive.core.support.handler.SensitiveWordDefaultHandler;
 import io.xiaochangbai.sensitive.core.support.replace.SensitiveWordReplaceChar;
 import io.xiaochangbai.sensitive.core.support.result.WordResultHandlers;
 import io.xiaochangbai.sensitive.common.utils.ArgUtil;
@@ -49,21 +49,16 @@ public class SensitiveWordDispatcher {
      */
     public void init() {
         // 加载配置信息
-        List<IWordDeny> configWordDenys = sensitiveWordConfig.getWordDenys();
         Set<String> denyList = new HashSet<>();
-        if(configWordDenys!=null){
-            for(IWordDeny wordDeny:configWordDenys){
-                List<String> deny = wordDeny.deny();
-                denyList.addAll(deny);
-            }
+        for(IWordDeny wordDeny:sensitiveWordConfig.findWordDenys()){
+            List<String> deny = wordDeny.deny();
+            denyList.addAll(deny);
         }
-        List<IWordAllow> allowList = sensitiveWordConfig.getWordAllows();
+
         Set<String> allows = new HashSet<>();
-        if(allowList!=null){
-            for(IWordAllow wordAllow:allowList){
-                List<String> deny = wordAllow.allow();
-                allows.addAll(deny);
-            }
+        for(IWordAllow wordAllow:sensitiveWordConfig.findWordAllows()){
+            List<String> deny = wordAllow.allow();
+            allows.addAll(deny);
         }
         List<String> results = denyList.stream().filter(e->!allows.contains(e)).collect(Collectors.toList());
 

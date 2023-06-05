@@ -12,11 +12,11 @@ import java.util.List;
  *3
  */
 @ThreadSafe
-public class WordDenySystem implements IWordDeny {
+public class SystemDefaultWordDeny implements IWordDeny {
 
     @Override
     public List<String> deny() {
-        return FileUtils.readAllLinesForZip("deny.zip");
+        return FileUtils.readAllLinesForZip(SystemDefaultWordDeny.class.getResourceAsStream("/deny.zip"));
     }
 
 }

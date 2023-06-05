@@ -4,12 +4,12 @@ import io.xiaochangbai.sensitive.common.core.WordContext;
 import io.xiaochangbai.sensitive.common.instance.Instances;
 import io.xiaochangbai.sensitive.core.api.IWordAllow;
 import io.xiaochangbai.sensitive.core.api.IWordDeny;
-import io.xiaochangbai.sensitive.core.support.allow.WordAllowSystem;
+import io.xiaochangbai.sensitive.core.support.allow.SystemDefaultWordAllow;
 import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckWord;
-import io.xiaochangbai.sensitive.core.support.deny.WordDenySystem;
-import lombok.Data;
+import io.xiaochangbai.sensitive.core.support.deny.SystemDefaultWordDeny;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,7 +17,6 @@ import java.util.List;
  * xiaochangbai
  *
  */
-@Data
 public class SensitiveWordConfig extends WordContext{
 
 
@@ -33,6 +32,7 @@ public class SensitiveWordConfig extends WordContext{
 
 
     public SensitiveWordConfig() {
+        this.addSensitiveChecks(Instances.singleton(SensitiveCheckWord.class));
     }
 
     /**
@@ -42,14 +42,39 @@ public class SensitiveWordConfig extends WordContext{
      */
     public static SensitiveWordConfig defaultConfig() {
         SensitiveWordConfig sensitiveWordConfig = new SensitiveWordConfig();
-        // 格式统一化
         sensitiveWordConfig.setIgnoreRepeat(false);
-        // 额外配置
-        sensitiveWordConfig.setSensitiveCheckNumLen(8);
-        sensitiveWordConfig.addSensitiveChecks(Instances.singleton(SensitiveCheckWord.class));
-        sensitiveWordConfig.setWordAllows(Arrays.asList(new WordAllowSystem()));
-        sensitiveWordConfig.setWordDenys(Arrays.asList(new WordDenySystem()));
+        sensitiveWordConfig.setSensitiveCheckNumLen(20);
+        sensitiveWordConfig.addWordAllows(new SystemDefaultWordAllow());
+        sensitiveWordConfig.addWordDenys(new SystemDefaultWordDeny());
         return sensitiveWordConfig;
+    }
+
+    public void addWordAllows(IWordAllow iWordAllow){
+        if(wordAllows==null){
+            wordAllows = new ArrayList<>(8);
+        }
+        wordAllows.add(iWordAllow);
+    }
+
+    public void addWordDenys(IWordDeny iWordDeny){
+        if(wordDenys==null){
+            wordDenys = new ArrayList<>(8);
+        }
+        wordDenys.add(iWordDeny);
+    }
+
+    public List<IWordDeny> findWordDenys(){
+        if(this.wordDenys==null){
+            return Collections.emptyList();
+        }
+        return this.wordDenys;
+    }
+
+    public List<IWordAllow> findWordAllows(){
+        if(this.wordAllows==null){
+            return Collections.emptyList();
+        }
+        return this.wordAllows;
     }
 
 

@@ -62,11 +62,9 @@ public class FileUtils {
 
     /**
      * 读出每一行的内容
-     * @param path
      * @return
      */
-    public static List<String> readAllLines(String path) {
-        InputStream io = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+    public static List<String> readAllLines(InputStream io) {
         if(io==null){
             return Collections.emptyList();
         }
@@ -101,11 +99,9 @@ public class FileUtils {
 
     /**
      * 从压缩文件中读取每一行内容
-     * @param path
      * @return
      */
-    public static List<String> readAllLinesForZip(String path) {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+    public static List<String> readAllLinesForZip(InputStream inputStream) {
         if(inputStream==null){
             return Collections.emptyList();
         }

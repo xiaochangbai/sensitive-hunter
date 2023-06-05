@@ -46,11 +46,6 @@ public class SensitiveCheckEmail implements ISensitiveCheck {
 
                 if(isCondition(stringBuilder.toString())) {
                     actualLength = lengthCount;
-
-                    // 是否遍历全部匹配的模式
-                    if(ValidModeEnum.FAIL_FAST.equals(validModeEnum)) {
-                        break;
-                    }
                 }
             } else {
                 break;
