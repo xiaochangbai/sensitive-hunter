@@ -33,7 +33,7 @@ public class WordContext {
      * 敏感数字检测对应的长度限制
      *
      */
-    private int sensitiveCheckNumLen;
+    private int sensitiveCheckNumLen = -1;
 
 
     /**

@@ -12,6 +12,7 @@ import io.xiaochangbai.sensitive.common.utils.CollectionUtil;
 import io.xiaochangbai.sensitive.common.handler.IHandler;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 敏感词引导类
@@ -25,7 +26,6 @@ public class SensitiveWordDispatcher {
 
 
     private SensitiveWordConfig sensitiveWordConfig;
-
 
 
 
@@ -49,9 +49,23 @@ public class SensitiveWordDispatcher {
      */
     public void init() {
         // 加载配置信息
-        List<String> denyList = sensitiveWordConfig.getWordDeny().deny();
-        List<String> allowList = sensitiveWordConfig.getWordAllow().allow();
-        List<String> results = getActualDenyList(denyList, allowList);
+        List<IWordDeny> configWordDenys = sensitiveWordConfig.getWordDenys();
+        Set<String> denyList = new HashSet<>();
+        if(configWordDenys!=null){
+            for(IWordDeny wordDeny:configWordDenys){
+                List<String> deny = wordDeny.deny();
+                denyList.addAll(deny);
+            }
+        }
+        List<IWordAllow> allowList = sensitiveWordConfig.getWordAllows();
+        Set<String> allows = new HashSet<>();
+        if(allowList!=null){
+            for(IWordAllow wordAllow:allowList){
+                List<String> deny = wordAllow.allow();
+                allows.addAll(deny);
+            }
+        }
+        List<String> results = denyList.stream().filter(e->!allows.contains(e)).collect(Collectors.toList());
 
         // 初始化 DFA 信息
         if(iWordHandler == null) {
@@ -59,38 +73,6 @@ public class SensitiveWordDispatcher {
         }
         // 便于可以多次初始化
         iWordHandler.initWord(results,sensitiveWordConfig);
-    }
-
-    /**
-     * 获取禁止列表中真正的禁止词汇
-     * @param denyList 禁止
-     * @param allowList 允许
-     * @return 结果
-     *1
-     */
-    List<String> getActualDenyList(List<String> denyList,
-                                   List<String> allowList) {
-        if(CollectionUtil.isEmpty(denyList)) {
-            return Collections.emptyList();
-        }
-        if(CollectionUtil.isEmpty(allowList)) {
-            return denyList;
-        }
-
-        List<String> formatDenyList = this.formatWordList(denyList);
-        List<String> formatAllowList = this.formatWordList(allowList);
-
-        List<String> resultList = new ArrayList<>();
-        Set<String> allowSet = new HashSet<>(formatAllowList);
-
-        for(String deny : formatDenyList) {
-            if(allowSet.contains(deny)) {
-                continue;
-            }
-
-            resultList.add(deny);
-        }
-        return resultList;
     }
 
     /**

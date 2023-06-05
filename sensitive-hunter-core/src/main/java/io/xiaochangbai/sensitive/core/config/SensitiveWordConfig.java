@@ -9,6 +9,9 @@ import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckWord;
 import io.xiaochangbai.sensitive.core.support.deny.WordDenySystem;
 import lombok.Data;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 上下文
  * xiaochangbai
@@ -19,21 +22,17 @@ public class SensitiveWordConfig extends WordContext{
 
 
     /**
-     * 敏感词
+     * 敏感词源
      */
-    private IWordDeny wordDeny;
+    private List<IWordDeny> wordDenys;
 
     /**
-     * 白名单
+     * 白名单源
      */
-    private IWordAllow wordAllow;
+    private List<IWordAllow> wordAllows;
 
 
-    /**
-     * 私有化构造器
-     *
-     */
-    private SensitiveWordConfig() {
+    public SensitiveWordConfig() {
     }
 
     /**
@@ -47,11 +46,9 @@ public class SensitiveWordConfig extends WordContext{
         sensitiveWordConfig.setIgnoreRepeat(false);
         // 额外配置
         sensitiveWordConfig.setSensitiveCheckNumLen(8);
-
-        sensitiveWordConfig.setWordDeny(new WordDenySystem());
-        sensitiveWordConfig.setWordAllow(new WordAllowSystem());
-
         sensitiveWordConfig.addSensitiveChecks(Instances.singleton(SensitiveCheckWord.class));
+        sensitiveWordConfig.setWordAllows(Arrays.asList(new WordAllowSystem()));
+        sensitiveWordConfig.setWordDenys(Arrays.asList(new WordDenySystem()));
         return sensitiveWordConfig;
     }
 
