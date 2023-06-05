@@ -2,11 +2,9 @@ package io.xiaochangbai.sensitive.core.support.check;
 
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
 import io.xiaochangbai.sensitive.common.core.WordContext;
-import io.xiaochangbai.sensitive.core.support.format.CharFormatChain;
 import io.xiaochangbai.sensitive.common.core.ISensitiveCheck;
 import io.xiaochangbai.sensitive.common.core.SensitiveCheckResult;
 import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
-import io.xiaochangbai.sensitive.common.instance.Instances;
 
 /**
  * 敏感词监测实现

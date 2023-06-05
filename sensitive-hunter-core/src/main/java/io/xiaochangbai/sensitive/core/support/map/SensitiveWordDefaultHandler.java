@@ -28,18 +28,13 @@ import java.util.List;
 @ThreadSafe
 public class SensitiveWordDefaultHandler implements IWordHandler {
 
-    /**
-     * 脱敏词树
-     */
-    private NodeTree rootNode;
-
     private WordContext wordContext;
 
     @Override
     public synchronized void initWord(Collection<String> collection, WordContext wordContext) {
         this.wordContext = wordContext;
         long startTime = System.currentTimeMillis();
-        rootNode = new NodeTree();
+        NodeTree rootNode = new NodeTree();
         for (String key : collection) {
             if (StringUtil.isEmpty(key)) {
                 continue;
@@ -61,6 +56,7 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
                 }
             }
         }
+        wordContext.setRootNode(rootNode);
         System.out.println("敏感词初始化完成，共"+collection.size()+"个词，耗时:"+(System.currentTimeMillis()-startTime)/1000.0+"/s");
     }
 

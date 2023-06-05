@@ -64,6 +64,9 @@ public class WordContext {
 
 
     public char formatChar(char origin){
+        if(this.charFormats==null || this.charFormats.size()<1){
+            return origin;
+        }
         for(ICharFormat iCharFormat:charFormats){
             origin = iCharFormat.format(origin);
         }
