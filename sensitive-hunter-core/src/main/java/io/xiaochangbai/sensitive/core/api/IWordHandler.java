@@ -1,7 +1,8 @@
 package io.xiaochangbai.sensitive.core.api;
 
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
-import io.xiaochangbai.sensitive.core.support.check.ISensitiveCheck;
+import io.xiaochangbai.sensitive.common.core.WordContext;
+import io.xiaochangbai.sensitive.common.core.ISensitiveCheck;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  * xiaochangbai
  *
  */
-public interface IWordHandler extends ISensitiveCheck {
+public interface IWordHandler {
 
 
     /**
@@ -19,39 +20,33 @@ public interface IWordHandler extends ISensitiveCheck {
      * @param collection 集合信息
      *
      */
-    void initWord(Collection<String> collection);
+    void initWord(Collection<String> collection, WordContext wordContext);
 
     /**
      * 是否包含敏感词
      * @param string 字符串
-     * @param context 上下文
      * @return 是否包含
      *
      * @see ValidModeEnum#FAIL_FAST 建议使用快速返回模式
      */
-    boolean contains(final String string,
-                     final IWordContext context);
+    boolean contains(final String string);
 
     /**
      * 返回所有对应的敏感词
      * @param string 原始字符串
-     * @param context 上下文
      * @return 结果
      *
      * @see ValidModeEnum#FAIL_OVER 建议使用全部检测返回模式
      */
-    List<IWordResult> findAll(final String string,
-                         final IWordContext context);
+    List<IWordResult> findAll(final String string);
 
     /**
      * 返回第一个对应的敏感词
      * @param string 原始字符串
-     * @param context 上下文
      * @return 结果
      *
      */
-    IWordResult findFirst(final String string,
-                     final IWordContext context);
+    IWordResult findFirst(final String string);
 
     /**
      * 替换所有敏感词内容
@@ -60,12 +55,10 @@ public interface IWordHandler extends ISensitiveCheck {
      *
      * @param target 目标字符串
      * @param replace 替换策略
-     * @param context 上下文
      * @return 替换后结果
      *
      */
     String replace(final String target,
-                   final ISensitiveWordReplace replace,
-                   final IWordContext context);
+                   final ISensitiveWordReplace replace);
 
 }

@@ -1,7 +1,6 @@
-package io.xiaochangbai.sensitive.core.support.check;
+package io.xiaochangbai.sensitive.common.core;
 
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
-import io.xiaochangbai.sensitive.core.api.IWordContext;
 
 /**
  * 敏感信息监测接口
@@ -30,13 +29,12 @@ public interface ISensitiveCheck {
      * @param txt           文本信息
      * @param beginIndex    开始下标
      * @param validModeEnum 验证模式
-     * @param context       执行上下文
      * @return 敏感信息对应的长度
      *
      */
     SensitiveCheckResult sensitiveCheck(final String txt,
                                         final int beginIndex,
                                         final ValidModeEnum validModeEnum,
-                                        final IWordContext context);
+                                        WordContext wordContext);
 
 }

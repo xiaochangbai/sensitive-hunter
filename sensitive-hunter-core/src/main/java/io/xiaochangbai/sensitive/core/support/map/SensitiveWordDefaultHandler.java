@@ -1,11 +1,12 @@
 package io.xiaochangbai.sensitive.core.support.map;
 
 
+import io.xiaochangbai.sensitive.common.core.WordContext;
 import io.xiaochangbai.sensitive.core.api.*;
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
-import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckResult;
-import io.xiaochangbai.sensitive.core.support.check.impl.SensitiveCheckChain;
-import io.xiaochangbai.sensitive.core.support.check.impl.SensitiveCheckUrl;
+import io.xiaochangbai.sensitive.common.core.ISensitiveCheck;
+import io.xiaochangbai.sensitive.common.core.SensitiveCheckResult;
+import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckUrl;
 import io.xiaochangbai.sensitive.core.support.replace.SensitiveWordReplaceContext;
 import io.xiaochangbai.sensitive.core.support.result.WordResult;
 import io.xiaochangbai.sensitive.common.utils.CollectionUtil;
@@ -13,7 +14,6 @@ import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 import io.xiaochangbai.sensitive.common.core.NodeTree;
 import io.xiaochangbai.sensitive.common.utils.FileUtils;
 import io.xiaochangbai.sensitive.common.utils.StringUtil;
-import io.xiaochangbai.sensitive.common.instance.Instances;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,14 +29,15 @@ import java.util.List;
 public class SensitiveWordDefaultHandler implements IWordHandler {
 
     /**
-     * 脱敏单词
-     *
-     *
+     * 脱敏词树
      */
     private NodeTree rootNode;
 
+    private WordContext wordContext;
+
     @Override
-    public synchronized void initWord(Collection<String> collection) {
+    public synchronized void initWord(Collection<String> collection, WordContext wordContext) {
+        this.wordContext = wordContext;
         long startTime = System.currentTimeMillis();
         rootNode = new NodeTree();
         for (String key : collection) {
@@ -73,13 +74,13 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
      *
      */
     @Override
-    public boolean contains(String string, final IWordContext context) {
+    public boolean contains(String string) {
         if (StringUtil.isEmpty(string)) {
             return false;
         }
 
         for (int i = 0; i < string.length(); i++) {
-            SensitiveCheckResult checkResult = sensitiveCheck(string, i, ValidModeEnum.FAIL_FAST, context);
+            SensitiveCheckResult checkResult = sensitiveCheck(string, i, ValidModeEnum.FAIL_FAST,wordContext);
             // 快速返回
             if (checkResult.index() > 0) {
                 return true;
@@ -98,13 +99,13 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
      *
      */
     @Override
-    public List<IWordResult> findAll(String string, final IWordContext context) {
-        return getSensitiveWords(string, ValidModeEnum.FAIL_OVER, context);
+    public List<IWordResult> findAll(String string) {
+        return getSensitiveWords(string, ValidModeEnum.FAIL_OVER);
     }
 
     @Override
-    public IWordResult findFirst(String string, final IWordContext context) {
-        List<IWordResult> stringList = getSensitiveWords(string, ValidModeEnum.FAIL_FAST, context);
+    public IWordResult findFirst(String string) {
+        List<IWordResult> stringList = getSensitiveWords(string, ValidModeEnum.FAIL_FAST);
 
         if (CollectionUtil.isEmpty(stringList)) {
             return null;
@@ -114,12 +115,12 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
     }
 
     @Override
-    public String replace(String target, final ISensitiveWordReplace replace, final IWordContext context) {
+    public String replace(String target, final ISensitiveWordReplace replace) {
         if(StringUtil.isEmpty(target)) {
             return target;
         }
 
-        return this.replaceSensitiveWord(target, replace, context);
+        return this.replaceSensitiveWord(target, replace);
     }
 
     /**
@@ -130,8 +131,7 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
      * @return 结果列表
      *
      */
-    private List<IWordResult> getSensitiveWords(final String text, final ValidModeEnum modeEnum,
-                                           final IWordContext context) {
+    private List<IWordResult> getSensitiveWords(final String text, final ValidModeEnum modeEnum) {
         //1. 是否存在敏感词，如果比存在，直接返回空列表
         if (StringUtil.isEmpty(text)) {
             return new ArrayList<>();
@@ -139,7 +139,7 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
 
         List<IWordResult> resultList = new ArrayList<>();
         for (int i = 0; i < text.length(); i++) {
-            SensitiveCheckResult checkResult = sensitiveCheck(text, i, ValidModeEnum.FAIL_OVER, context);
+            SensitiveCheckResult checkResult = sensitiveCheck(text, i, ValidModeEnum.FAIL_OVER,wordContext);
             // 命中
             int wordLength = checkResult.index();
             if (wordLength > 0) {
@@ -172,13 +172,11 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
      * 直接替换敏感词，返回替换后的结果
      * @param target           文本信息
      * @param replace 替换策略
-     * @param context 上下文
      * @return 脱敏后的字符串
      *
      */
     private String replaceSensitiveWord(final String target,
-                                        final ISensitiveWordReplace replace,
-                                        final IWordContext context) {
+                                        final ISensitiveWordReplace replace) {
         if(StringUtil.isEmpty(target)) {
             return target;
         }
@@ -188,7 +186,7 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
         for (int i = 0; i < target.length(); i++) {
             char currentChar = target.charAt(i);
             // 内层直接从 i 开始往后遍历，这个算法的，获取第一个匹配的单词
-            SensitiveCheckResult checkResult = sensitiveCheck(target, i, ValidModeEnum.FAIL_OVER, context);
+            SensitiveCheckResult checkResult = sensitiveCheck(target, i, ValidModeEnum.FAIL_OVER,wordContext);
 
             // 敏感词
             int wordLength = checkResult.index();
@@ -221,14 +219,19 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
         return resultBuilder.toString();
     }
 
-    @Override
-    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum, IWordContext context) {
-        // 默认执行敏感词操作
-        context.sensitiveWordInfo(rootNode);
+    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum,
+                                               WordContext wordContext) {
 
-        // 责任链模式调用
-        return Instances.singleton(SensitiveCheckChain.class)
-                .sensitiveCheck(txt, beginIndex, validModeEnum, context);
+        for(ISensitiveCheck sensitiveCheck : wordContext.getSensitiveChecks()) {
+            SensitiveCheckResult result = sensitiveCheck.sensitiveCheck(txt, beginIndex, validModeEnum,wordContext);
+
+            if(result.index() > 0) {
+                return result;
+            }
+        }
+        return SensitiveCheckResult.of(0,null);
+
     }
+
 
 }

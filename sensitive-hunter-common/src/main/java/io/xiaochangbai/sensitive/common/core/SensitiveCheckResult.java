@@ -1,4 +1,4 @@
-package io.xiaochangbai.sensitive.core.support.check;
+package io.xiaochangbai.sensitive.common.core;
 
 /**
  * 敏感信息监测接口结果
@@ -19,7 +19,7 @@ public class SensitiveCheckResult {
      * 检测类
      *2
      */
-    private Class<? extends ISensitiveCheck> checkClass;
+    private Class<?> checkClass;
 
     /**
      * 实例化
@@ -29,7 +29,7 @@ public class SensitiveCheckResult {
      *2
      */
     public static SensitiveCheckResult of(final int index,
-                                          final Class<? extends ISensitiveCheck> checkClass) {
+                                          final Class<?> checkClass) {
         SensitiveCheckResult result = new SensitiveCheckResult();
         result.index(index).checkClass(checkClass);
         return result;
@@ -44,11 +44,11 @@ public class SensitiveCheckResult {
         return this;
     }
 
-    public Class<? extends ISensitiveCheck> checkClass() {
+    public Class<?> checkClass() {
         return checkClass;
     }
 
-    public SensitiveCheckResult checkClass(Class<? extends ISensitiveCheck> checkClass) {
+    public SensitiveCheckResult checkClass(Class<?> checkClass) {
         this.checkClass = checkClass;
         return this;
     }

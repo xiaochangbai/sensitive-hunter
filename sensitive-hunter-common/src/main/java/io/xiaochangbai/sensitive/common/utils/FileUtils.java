@@ -22,7 +22,7 @@ public class FileUtils {
      * @return
      * @throws Exception
      */
-    public static String compressFileByZIP(String filePath) throws Exception {
+    public static String compressFileByZIP(String filePath,String outPath) throws Exception {
         File file = new File(filePath);
         String outputFIleName = file.getName() + ".zip";
         ArrayList<File> fileList = new ArrayList<>();
@@ -32,7 +32,9 @@ public class FileUtils {
             fileList.add(file);
         }
         FileInputStream fileInputStream = null;
-        String outPath = file.getParentFile().getPath()+File.separator+outputFIleName;
+        if(outPath==null){
+            outPath = file.getParentFile().getPath()+File.separator+outputFIleName;
+        }
         CheckedOutputStream checkedOutputStream = new CheckedOutputStream(new FileOutputStream(outPath), new Adler32());
         ZipOutputStream zipOutputStream = new ZipOutputStream(checkedOutputStream);
         for (File f : fileList) {

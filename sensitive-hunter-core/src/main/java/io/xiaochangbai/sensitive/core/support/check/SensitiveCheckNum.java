@@ -1,10 +1,10 @@
-package io.xiaochangbai.sensitive.core.support.check.impl;
+package io.xiaochangbai.sensitive.core.support.check;
 
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
+import io.xiaochangbai.sensitive.common.core.WordContext;
 import io.xiaochangbai.sensitive.core.support.format.CharFormatChain;
-import io.xiaochangbai.sensitive.core.api.IWordContext;
-import io.xiaochangbai.sensitive.core.support.check.ISensitiveCheck;
-import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckResult;
+import io.xiaochangbai.sensitive.common.core.ISensitiveCheck;
+import io.xiaochangbai.sensitive.common.core.SensitiveCheckResult;
 import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 import io.xiaochangbai.sensitive.common.instance.Instances;
 
@@ -19,14 +19,15 @@ import io.xiaochangbai.sensitive.common.instance.Instances;
 public class SensitiveCheckNum implements ISensitiveCheck {
 
     @Override
-    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum, IWordContext context) {
+    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex,
+                                               ValidModeEnum validModeEnum, WordContext wordContext) {
         // 记录敏感词的长度
         int lengthCount = 0;
         int actualLength = 0;
 
         for (int i = beginIndex; i < txt.length(); i++) {
             char c = txt.charAt(i);
-            char charKey = Instances.singleton(CharFormatChain.class).format(c, context);
+            char charKey = wordContext.formatChar(c);;
 
             // 如果是数字
             // 满足进入的条件
@@ -34,7 +35,7 @@ public class SensitiveCheckNum implements ISensitiveCheck {
                 lengthCount++;
 
                 // 满足结束的条件
-                boolean isCondition = isCondition(lengthCount, context);
+                boolean isCondition = isCondition(lengthCount);
                 if (isCondition) {
                     // 只在匹配到结束的时候才记录长度，避免不完全匹配导致的问题。
                     actualLength = lengthCount;
@@ -55,15 +56,12 @@ public class SensitiveCheckNum implements ISensitiveCheck {
 
     /**
      * 这里指定一个阈值条件
-     * TODO: 这里有一个问题，会把一些 url 中的数字替换掉。
      * @param lengthCount 长度
-     * @param context 上下文
      * @return 是否满足条件
      *
      */
-    protected boolean isCondition(final int lengthCount,
-                                final IWordContext context) {
-        return lengthCount >= context.sensitiveCheckNumLen();
+    protected boolean isCondition(final int lengthCount) {
+        return lengthCount >= 1000;
     }
 
 }

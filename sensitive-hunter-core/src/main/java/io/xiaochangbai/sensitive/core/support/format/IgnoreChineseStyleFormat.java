@@ -1,8 +1,7 @@
 package io.xiaochangbai.sensitive.core.support.format;
 
 
-import io.xiaochangbai.sensitive.core.api.ICharFormat;
-import io.xiaochangbai.sensitive.core.api.IWordContext;
+import io.xiaochangbai.sensitive.common.core.ICharFormat;
 import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 
 /**
@@ -14,7 +13,7 @@ import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 public class IgnoreChineseStyleFormat implements ICharFormat {
 
     @Override
-    public char format(char original, IWordContext context) {
+    public char format(char original) {
 //        String string = String.valueOf(original);
 //        String simple = ZhConvertBootstrap.newInstance(new CharSegment()).toSimple(string);
 //        return simple.charAt(0);

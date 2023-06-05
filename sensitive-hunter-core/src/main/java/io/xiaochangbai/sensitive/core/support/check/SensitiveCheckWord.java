@@ -1,11 +1,11 @@
-package io.xiaochangbai.sensitive.core.support.check.impl;
+package io.xiaochangbai.sensitive.core.support.check;
 
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
+import io.xiaochangbai.sensitive.common.core.WordContext;
 import io.xiaochangbai.sensitive.core.support.format.CharFormatChain;
-import io.xiaochangbai.sensitive.core.api.IWordContext;
 import io.xiaochangbai.sensitive.common.core.NodeTree;
-import io.xiaochangbai.sensitive.core.support.check.ISensitiveCheck;
-import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckResult;
+import io.xiaochangbai.sensitive.common.core.ISensitiveCheck;
+import io.xiaochangbai.sensitive.common.core.SensitiveCheckResult;
 import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 import io.xiaochangbai.sensitive.common.instance.Instances;
 
@@ -18,8 +18,8 @@ import io.xiaochangbai.sensitive.common.instance.Instances;
 public class SensitiveCheckWord implements ISensitiveCheck {
 
     @Override
-    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum, IWordContext context) {
-        NodeTree nowNode = context.sensitiveWordInfo();
+    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum, WordContext wordContext) {
+        NodeTree nowNode = wordContext.getRootNode();
 
         // 记录敏感词的长度
         int lengthCount = 0;
@@ -27,7 +27,7 @@ public class SensitiveCheckWord implements ISensitiveCheck {
 
         for (int i = beginIndex; i < txt.length(); i++) {
             // 获取当前的node信息
-            nowNode = getNowNode(nowNode, context, txt, i);
+            nowNode = getNowNode(nowNode, wordContext, txt, i);
 
             if (null != nowNode) {
                 lengthCount++;
@@ -60,20 +60,19 @@ public class SensitiveCheckWord implements ISensitiveCheck {
      *
      */
     private NodeTree getNowNode(NodeTree nodeTree,
-                          final IWordContext context,
+                          final WordContext context,
                           final String txt,
                           final int index) {
         char c = txt.charAt(index);
-        char mappingChar = Instances.singleton(CharFormatChain.class).format(c, context);
+        char mappingChar = context.formatChar(c);;
 
         // 这里做一次重复词的处理
         NodeTree subNode = nodeTree.getSubNode(mappingChar);
         // 启用忽略重复&当前下标不是第一个
-        if(context.ignoreRepeat()
+        if(context.isIgnoreRepeat()
             && index > 0) {
             char preChar = txt.charAt(index-1);
-            char preMappingChar = Instances.singleton(CharFormatChain.class)
-                    .format(preChar, context);
+            char preMappingChar = context.formatChar(preChar);;
 
             // 返回父节点
             if(preMappingChar == mappingChar) {

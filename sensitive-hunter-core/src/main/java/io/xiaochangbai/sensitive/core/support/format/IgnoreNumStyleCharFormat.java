@@ -1,7 +1,6 @@
 package io.xiaochangbai.sensitive.core.support.format;
 
-import io.xiaochangbai.sensitive.core.api.IWordContext;
-import io.xiaochangbai.sensitive.core.api.ICharFormat;
+import io.xiaochangbai.sensitive.common.core.ICharFormat;
 import io.xiaochangbai.sensitive.common.utils.NumUtils;
 import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 
@@ -14,7 +13,7 @@ import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 public class IgnoreNumStyleCharFormat implements ICharFormat {
 
     @Override
-    public char format(char original, IWordContext context) {
+    public char format(char original) {
         return NumUtils.getMappingChar(original);
     }
 

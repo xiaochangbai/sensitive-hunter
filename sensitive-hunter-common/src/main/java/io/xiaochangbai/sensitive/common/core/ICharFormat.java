@@ -1,4 +1,5 @@
-package io.xiaochangbai.sensitive.core.api;
+package io.xiaochangbai.sensitive.common.core;
+
 
 /**
  * 单词格式化
@@ -15,11 +16,9 @@ public interface ICharFormat {
     /**
      * 针对 char 格式化
      * @param original 原始 char
-     * @param context 上下文
      * @return 格式化后的 char
      *
      */
-    char format(final char original,
-                final IWordContext context);
+    char format(final char original);
 
 }

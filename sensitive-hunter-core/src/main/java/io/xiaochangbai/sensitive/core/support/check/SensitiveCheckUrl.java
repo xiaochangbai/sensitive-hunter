@@ -1,35 +1,38 @@
-package io.xiaochangbai.sensitive.core.support.check.impl;
+package io.xiaochangbai.sensitive.core.support.check;
 
 import io.xiaochangbai.sensitive.common.constant.enums.ValidModeEnum;
-import io.xiaochangbai.sensitive.core.support.check.ISensitiveCheck;
-import io.xiaochangbai.sensitive.core.support.check.SensitiveCheckResult;
+import io.xiaochangbai.sensitive.common.core.WordContext;
 import io.xiaochangbai.sensitive.core.support.format.CharFormatChain;
-import io.xiaochangbai.sensitive.common.utils.RegexUtil;
-import io.xiaochangbai.sensitive.core.api.IWordContext;
+import io.xiaochangbai.sensitive.common.core.ISensitiveCheck;
+import io.xiaochangbai.sensitive.common.core.SensitiveCheckResult;
 import io.xiaochangbai.sensitive.common.utils.CharUtil;
+import io.xiaochangbai.sensitive.common.utils.RegexUtil;
 import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 import io.xiaochangbai.sensitive.common.instance.Instances;
 
 /**
- * email 正则表达式检测实现。
- *
- * TODO: 这里暂时不实现邮箱后缀的实现。
- *
- * （1）命中结果应该有标记，属于哪一个验证模式命中
- * （2）后期优化方案可以是：
- * 如果数字后面紧跟的是邮箱后缀命中，则直接连接起来 num+email-suffix;
- * （3）邮箱后缀的去重
- * 邮箱后缀可以只处理为和 Num 构建，如果没有直接丢弃的模式。
+ * URL 正则表达式检测实现。
  *
  * 也可以严格的保留下来。
+ *
+ * （1）暂时先粗略的处理 web-site
+ * （2）如果网址的最后为图片类型，则跳过。
+ * （3）长度超过 70，直接结束。
+ *
  * xiaochangbai
  *
  */
 @ThreadSafe
-public class SensitiveCheckEmail implements ISensitiveCheck {
+public class SensitiveCheckUrl implements ISensitiveCheck {
+
+    /**
+     * 最长的网址长度
+     *2
+     */
+    private static final int MAX_WEB_SITE_LEN = 70;
 
     @Override
-    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum, IWordContext context) {
+    public SensitiveCheckResult sensitiveCheck(String txt, int beginIndex, ValidModeEnum validModeEnum, WordContext wordContext) {
         // 记录敏感词的长度
         int lengthCount = 0;
         int actualLength = 0;
@@ -40,10 +43,10 @@ public class SensitiveCheckEmail implements ISensitiveCheck {
         // 后期如果有想法，对 DFA 进一步深入学习后，将进行优化。
         for(int i = beginIndex; i < txt.length(); i++) {
             char currentChar = txt.charAt(i);
-            char mappingChar = Instances.singleton(CharFormatChain.class)
-                    .format(currentChar, context);
+            char mappingChar = wordContext.formatChar(currentChar);;
 
-            if(CharUtil.isEmilChar(mappingChar)) {
+            if(CharUtil.isWebSiteChar(mappingChar)
+                && lengthCount <= MAX_WEB_SITE_LEN) {
                 lengthCount++;
                 stringBuilder.append(currentChar);
 
@@ -60,17 +63,18 @@ public class SensitiveCheckEmail implements ISensitiveCheck {
             }
         }
 
-        return SensitiveCheckResult.of(actualLength, SensitiveCheckEmail.class);
+        return SensitiveCheckResult.of(actualLength, SensitiveCheckUrl.class);
     }
 
     /**
      * 这里指定一个阈值条件
      * @param string 长度
      * @return 是否满足条件
-     *
+     *2
      */
     private boolean isCondition(final String string) {
-        return RegexUtil.isEmail(string);
+        return RegexUtil.isWebSite(string);
     }
+
 
 }

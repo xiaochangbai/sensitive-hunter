@@ -1,6 +1,7 @@
 package io.xiaochangbai.sensitive.core.main;
 
 
+import io.xiaochangbai.sensitive.core.config.SensitiveWordConfig;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +10,8 @@ public class SensitiveWordBsTest {
     SensitiveWordDispatcher sensitiveWordBs;
     @Before
     public void init(){
-        sensitiveWordBs = SensitiveWordDispatcher.newInstance();
+        SensitiveWordConfig sensitiveWordConfig = SensitiveWordConfig.defaultConfig();
+        sensitiveWordBs = SensitiveWordDispatcher.newInstance(sensitiveWordConfig);
     }
 
     @Test

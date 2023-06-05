@@ -61,7 +61,6 @@ demo-client/.flattened-pom.xml
 *.jar
 *.war
 *.ear
-*.zip
 *.tar.gz
 *.rar
 

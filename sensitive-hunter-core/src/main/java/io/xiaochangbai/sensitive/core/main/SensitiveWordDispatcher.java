@@ -1,15 +1,14 @@
 package io.xiaochangbai.sensitive.core.main;
 
+import io.xiaochangbai.sensitive.common.core.ICharFormat;
+import io.xiaochangbai.sensitive.common.utils.StringUtil;
 import io.xiaochangbai.sensitive.core.api.*;
-import io.xiaochangbai.sensitive.core.context.SensitiveWordContext;
-import io.xiaochangbai.sensitive.core.support.allow.WordAllows;
-import io.xiaochangbai.sensitive.core.support.deny.WordDenys;
+import io.xiaochangbai.sensitive.core.config.SensitiveWordConfig;
 import io.xiaochangbai.sensitive.core.support.map.SensitiveWordDefaultHandler;
 import io.xiaochangbai.sensitive.core.support.replace.SensitiveWordReplaceChar;
 import io.xiaochangbai.sensitive.core.support.result.WordResultHandlers;
 import io.xiaochangbai.sensitive.common.utils.ArgUtil;
 import io.xiaochangbai.sensitive.common.utils.CollectionUtil;
-import io.xiaochangbai.sensitive.core.utils.InnerFormatUtils;
 import io.xiaochangbai.sensitive.common.handler.IHandler;
 
 import java.util.*;
@@ -22,50 +21,36 @@ import java.util.*;
  */
 public class SensitiveWordDispatcher {
 
-    /**
-     * 私有化构造器
-     *
-     *
-     */
+    private IWordHandler iWordHandler;
+
+
+    private SensitiveWordConfig sensitiveWordConfig;
+
+
+
+
     private SensitiveWordDispatcher() {
     }
 
-    /**
-     * 敏感词 map
-     *
-     *
-     */
-    private IWordHandler iWordHandler;
+    private SensitiveWordDispatcher(SensitiveWordConfig config) {
+        this.sensitiveWordConfig = config;
+    }
+
+
+
+    public static SensitiveWordDispatcher newInstance(SensitiveWordConfig config) {
+        SensitiveWordDispatcher sensitiveWordDispatcher = new SensitiveWordDispatcher(config);
+        sensitiveWordDispatcher.init();
+        return sensitiveWordDispatcher;
+    }
 
     /**
-     * 默认的执行上下文
-     *
-     *
+     * 初始化
      */
-    private final IWordContext context = buildDefaultContext();
-
-    /**
-     * 禁止的单词
-     *3
-     */
-    private IWordDeny wordDeny = WordDenys.system();
-
-    /**
-     * 允许的单词
-     *3
-     */
-    private IWordAllow wordAllow = WordAllows.system();
-
-    /**
-     * DCL 初始化 wordMap 信息
-     *
-     * 注意：map 的构建是一个比较耗时的动作
-     *
-     */
-    private synchronized void initWordMap() {
+    public void init() {
         // 加载配置信息
-        List<String> denyList = wordDeny.deny();
-        List<String> allowList = wordAllow.allow();
+        List<String> denyList = sensitiveWordConfig.getWordDeny().deny();
+        List<String> allowList = sensitiveWordConfig.getWordAllow().allow();
         List<String> results = getActualDenyList(denyList, allowList);
 
         // 初始化 DFA 信息
@@ -73,7 +58,7 @@ public class SensitiveWordDispatcher {
             iWordHandler = new SensitiveWordDefaultHandler();
         }
         // 便于可以多次初始化
-        iWordHandler.initWord(results);
+        iWordHandler.initWord(results,sensitiveWordConfig);
     }
 
     /**
@@ -96,7 +81,6 @@ public class SensitiveWordDispatcher {
         List<String> formatAllowList = this.formatWordList(allowList);
 
         List<String> resultList = new ArrayList<>();
-        // O(1)
         Set<String> allowSet = new HashSet<>(formatAllowList);
 
         for(String deny : formatDenyList) {
@@ -119,204 +103,28 @@ public class SensitiveWordDispatcher {
         if(CollectionUtil.isEmpty(list)) {
             return list;
         }
-
+        List<ICharFormat> charFormats = sensitiveWordConfig.getCharFormats();
+        if(charFormats==null || charFormats.size()<1){
+            return list;
+        }
         List<String> resultList = new ArrayList<>(list.size());
         for(String word : list) {
-            String formatWord = InnerFormatUtils.format(word, this.context);
-            resultList.add(formatWord);
+            if(StringUtil.isEmpty(word)) {
+                continue;
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            char[] chars = word.toCharArray();
+            for(char c : chars) {
+                char cf = sensitiveWordConfig.formatChar(c);
+                stringBuilder.append(cf);
+            }
+            resultList.add(stringBuilder.toString());
+
         }
 
         return resultList;
     }
 
-    /**
-     * 新建验证实例
-     * <p>
-     * double-lock
-     *
-     * @return this
-     *
-     */
-    public static SensitiveWordDispatcher newInstance() {
-        return new SensitiveWordDispatcher();
-    }
-
-    /**
-     * 初始化
-     *
-     * 1. 根据配置，初始化对应的 map。比较消耗性能。
-     *3
-     * @return this
-     */
-    public SensitiveWordDispatcher init() {
-        this.initWordMap();
-
-        return this;
-    }
-
-    /**
-     * 设置禁止的实现
-     * @param wordDeny 禁止的实现
-     * @return this
-     *3
-     */
-    public SensitiveWordDispatcher wordDeny(IWordDeny wordDeny) {
-        ArgUtil.notNull(wordDeny, "wordDeny");
-        this.wordDeny = wordDeny;
-        return this;
-    }
-
-    /**
-     * 设置允许的实现
-     * @param wordAllow 允许的实现
-     * @return this
-     *3
-     */
-    public SensitiveWordDispatcher wordAllow(IWordAllow wordAllow) {
-        ArgUtil.notNull(wordAllow, "wordAllow");
-        this.wordAllow = wordAllow;
-        return this;
-    }
-
-    /**
-     * 设置是否启动数字检测
-     *
-     * @param enableNumCheck 数字检测
-     *1
-     * @return this
-     */
-    public SensitiveWordDispatcher enableNumCheck(boolean enableNumCheck) {
-        this.context.sensitiveCheckNum(enableNumCheck);
-        return this;
-    }
-
-    /**
-     * 检测敏感词对应的长度限制，便于用户灵活定义
-     * @param numCheckLen 长度
-     * @return this
-     *
-     */
-    public SensitiveWordDispatcher numCheckLen(int numCheckLen) {
-        this.context.sensitiveCheckNumLen(numCheckLen);
-        return this;
-    }
-
-    /**
-     * 设置是否启动 email 检测
-     *
-     * @param enableEmailCheck email 检测
-     *1
-     * @return this
-     */
-    public SensitiveWordDispatcher enableEmailCheck(boolean enableEmailCheck) {
-        this.context.sensitiveCheckEmail(enableEmailCheck);
-        return this;
-    }
-
-    /**
-     * 设置是否启动 url 检测
-     *
-     * @param enableUrlCheck url 检测
-     *2
-     * @return this
-     */
-    public SensitiveWordDispatcher enableUrlCheck(boolean enableUrlCheck) {
-        this.context.sensitiveCheckUrl(enableUrlCheck);
-        return this;
-    }
-
-    /**
-     * 是否忽略大小写
-     * @param ignoreCase 大小写
-     * @return this
-     *4
-     */
-    public SensitiveWordDispatcher ignoreCase(boolean ignoreCase) {
-        this.context.ignoreCase(ignoreCase);
-        return this;
-    }
-
-    /**
-     * 是否忽略半角全角
-     * @param ignoreWidth 半角全角
-     * @return this
-     *4
-     */
-    public SensitiveWordDispatcher ignoreWidth(boolean ignoreWidth) {
-        this.context.ignoreWidth(ignoreWidth);
-        return this;
-    }
-
-    /**
-     * 是否忽略数字格式
-     * @param ignoreNumStyle 数字格式
-     * @return this
-     *4
-     */
-    public SensitiveWordDispatcher ignoreNumStyle(boolean ignoreNumStyle) {
-        this.context.ignoreNumStyle(ignoreNumStyle);
-        return this;
-    }
-
-    /**
-     * 是否忽略中文样式
-     * @param ignoreChineseStyle 中文样式
-     * @return this
-     *4
-     */
-    public SensitiveWordDispatcher ignoreChineseStyle(boolean ignoreChineseStyle) {
-        this.context.ignoreChineseStyle(ignoreChineseStyle);
-        return this;
-    }
-
-    /**
-     * 是否忽略英文样式
-     * @param ignoreEnglishStyle 英文样式
-     * @return this
-     *4
-     */
-    public SensitiveWordDispatcher ignoreEnglishStyle(boolean ignoreEnglishStyle) {
-        this.context.ignoreEnglishStyle(ignoreEnglishStyle);
-        return this;
-    }
-
-    /**
-     * 是否忽略重复
-     * @param ignoreRepeat 忽略重复
-     * @return this
-     *4
-     */
-    public SensitiveWordDispatcher ignoreRepeat(boolean ignoreRepeat) {
-        this.context.ignoreRepeat(ignoreRepeat);
-        return this;
-    }
-
-    /**
-     * 构建默认的上下文
-     *
-     * @return 结果
-     *
-     */
-    private IWordContext buildDefaultContext() {
-        IWordContext wordContext = SensitiveWordContext.newInstance();
-        // 格式统一化
-        wordContext.ignoreCase(true);
-        wordContext.ignoreWidth(true);
-        wordContext.ignoreNumStyle(true);
-        wordContext.ignoreChineseStyle(true);
-        wordContext.ignoreEnglishStyle(true);
-        wordContext.ignoreRepeat(false);
-
-        // 开启校验
-        wordContext.sensitiveCheckNum(true);
-        wordContext.sensitiveCheckEmail(true);
-        wordContext.sensitiveCheckUrl(true);
-
-        // 额外配置
-        wordContext.sensitiveCheckNumLen(8);
-
-        return wordContext;
-    }
 
     /**
      * 是否包含敏感词
@@ -326,9 +134,7 @@ public class SensitiveWordDispatcher {
      *
      */
     public boolean contains(final String target) {
-        statusCheck();
-
-        return iWordHandler.contains(target, context);
+        return iWordHandler.contains(target);
     }
 
     /**
@@ -369,9 +175,7 @@ public class SensitiveWordDispatcher {
      */
     public <R> List<R> findAll(final String target, final IWordResultHandler<R> handler) {
         ArgUtil.notNull(handler, "handler");
-        statusCheck();
-
-        List<IWordResult> wordResults = iWordHandler.findAll(target, context);
+        List<IWordResult> wordResults = iWordHandler.findAll(target);
         return CollectionUtil.toList(wordResults, new IHandler<IWordResult, R>() {
             @Override
             public R handle(IWordResult wordResult) {
@@ -392,9 +196,7 @@ public class SensitiveWordDispatcher {
      */
     public <R> R findFirst(final String target, final IWordResultHandler<R> handler) {
         ArgUtil.notNull(handler, "handler");
-        statusCheck();
-
-        IWordResult wordResult = iWordHandler.findFirst(target, context);
+        IWordResult wordResult = iWordHandler.findFirst(target);
         return handler.handle(wordResult);
     }
 
@@ -422,9 +224,7 @@ public class SensitiveWordDispatcher {
      *
      */
     public String replace(final String target, final ISensitiveWordReplace replace) {
-        statusCheck();
-
-        return iWordHandler.replace(target, replace, context);
+        return iWordHandler.replace(target, replace);
     }
 
     /**
@@ -440,19 +240,5 @@ public class SensitiveWordDispatcher {
     }
 
 
-    /**
-     * 状态校验
-     *3
-     */
-    private void statusCheck(){
-        //DLC
-        if(iWordHandler == null) {
-            synchronized (this) {
-                if(iWordHandler == null) {
-                    this.init();
-                }
-            }
-        }
-    }
 
 }
