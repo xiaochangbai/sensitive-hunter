@@ -13,11 +13,12 @@ public class SensitiveWordBsTest {
 
     @Test
     public void simple() {
+        //构建api对象
         SensitiveWordDispatcher sensitiveWordBs = SensitiveWordDispatcher
                 .newInstance(SensitiveWordConfig.defaultConfig());
-        //共152404个词
-        boolean contains = sensitiveWordBs.contains("黄色的");
-        Assert.assertTrue(contains);
+        //判断是否包含敏感词
+        Assert.assertTrue(sensitiveWordBs.contains("好好学习，天天向上"));
+        sensitiveWordBs.replace("高考加油噢！",'*');
     }
 
     @Test
