@@ -220,7 +220,6 @@ public class SensitiveWordDefaultHandler implements IWordHandler {
 
         for(ISensitiveCheck sensitiveCheck : wordContext.getSensitiveChecks()) {
             SensitiveCheckResult result = sensitiveCheck.sensitiveCheck(txt, beginIndex, validModeEnum,wordContext);
-
             if(result.index() > 0) {
                 return result;
             }

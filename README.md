@@ -19,13 +19,39 @@
 
 
 ### 快速开始
+
+
+**1) 在pom文件中引入依赖:**
+```xml
+    <dependency>
+        <groupId>io.xiaochangbai.sensitive</groupId>
+        <artifactId>sensitive-hunter-core</artifactId>
+        <version>${last-version}</version>
+    </dependency>
+```
+
+**2) 将对象注入到Spring容器中:**
+
 ```java
-    //构建api对象
-    SensitiveWordDispatcher sensitiveWordBs = SensitiveWordDispatcher
-            .newInstance(SensitiveWordConfig.defaultConfig());
-    //判断是否包含敏感词
-    Assert.assertTrue(sensitiveWordBs.contains("好好学习，天天向上"));
-    
-    //替换敏感词
-    sensitiveWordBs.replace("高考加油噢！",'*');
+    @Bean
+    public SWDispatcher sWDispatcher(){
+        SensitiveWordConfig sensitiveWordConfig = SensitiveWordConfig.defaultConfig();
+        return SensitiveWordDispatcher.newInstance(sensitiveWordConfig);
+    }
+```
+**3) 在需要用到的使用即可:**
+
+```java
+    @Autowired
+    private SWDispatcher sWDispatcher;
+
+    @Test
+    public void test(){
+        String text = "我爱中华，中华爱我";
+        //将语句中的敏感词替换成指定内容
+        sWDispatcher.replace(text,'*');
+
+        //查看语句中是否包含敏感词
+        sWDispatcher.contains(text);
+    }
 ```

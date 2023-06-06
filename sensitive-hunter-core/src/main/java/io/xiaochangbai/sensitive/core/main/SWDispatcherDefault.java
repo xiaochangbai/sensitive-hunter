@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * xiaochangbai
  *
  */
-public class SensitiveWordDispatcher {
+public class SWDispatcherDefault implements SWDispatcher{
 
     private IWordHandler iWordHandler;
 
@@ -29,17 +29,17 @@ public class SensitiveWordDispatcher {
 
 
 
-    private SensitiveWordDispatcher() {
+    private SWDispatcherDefault() {
     }
 
-    private SensitiveWordDispatcher(SensitiveWordConfig config) {
+    private SWDispatcherDefault(SensitiveWordConfig config) {
         this.sensitiveWordConfig = config;
     }
 
 
 
-    public static SensitiveWordDispatcher newInstance(SensitiveWordConfig config) {
-        SensitiveWordDispatcher sensitiveWordDispatcher = new SensitiveWordDispatcher(config);
+    public static SWDispatcherDefault newInstance(SensitiveWordConfig config) {
+        SWDispatcherDefault sensitiveWordDispatcher = new SWDispatcherDefault(config);
         sensitiveWordDispatcher.init();
         return sensitiveWordDispatcher;
     }
@@ -67,15 +67,10 @@ public class SensitiveWordDispatcher {
             iWordHandler = new SensitiveWordDefaultHandler();
         }
         // 便于可以多次初始化
-        iWordHandler.initWord(results,sensitiveWordConfig);
+        iWordHandler.initWord(formatWordList(results),sensitiveWordConfig);
     }
 
-    /**
-     * 数据格式化处理
-     * @param list 列表
-     * @return 结果
-     *1
-     */
+
     private List<String> formatWordList(List<String> list) {
         if(CollectionUtil.isEmpty(list)) {
             return list;
@@ -103,13 +98,7 @@ public class SensitiveWordDispatcher {
     }
 
 
-    /**
-     * 是否包含敏感词
-     *
-     * @param target 目标字符串
-     * @return 是否
-     *
-     */
+    @Override
     public boolean contains(final String target) {
         return iWordHandler.contains(target);
     }
@@ -123,6 +112,7 @@ public class SensitiveWordDispatcher {
      * @return 敏感词列表
      *
      */
+    @Override
     public List<String> findAll(final String target) {
         return findAll(target, WordResultHandlers.word());
     }
@@ -135,6 +125,7 @@ public class SensitiveWordDispatcher {
      * @return 敏感词
      *
      */
+    @Override
     public String findFirst(final String target) {
         return findFirst(target, WordResultHandlers.word());
     }
@@ -150,6 +141,7 @@ public class SensitiveWordDispatcher {
      * @return 敏感词列表
      *
      */
+    @Override
     public <R> List<R> findAll(final String target, final IWordResultHandler<R> handler) {
         ArgUtil.notNull(handler, "handler");
         List<IWordResult> wordResults = iWordHandler.findAll(target);
@@ -171,6 +163,7 @@ public class SensitiveWordDispatcher {
      * @return 敏感词
      *
      */
+    @Override
     public <R> R findFirst(final String target, final IWordResultHandler<R> handler) {
         ArgUtil.notNull(handler, "handler");
         IWordResult wordResult = iWordHandler.findFirst(target);
@@ -186,6 +179,7 @@ public class SensitiveWordDispatcher {
      * @return 替换后结果
      *
      */
+    @Override
     public String replace(final String target, final char replaceChar) {
         ISensitiveWordReplace replace = new SensitiveWordReplaceChar(replaceChar);
 
@@ -200,6 +194,7 @@ public class SensitiveWordDispatcher {
      * @return 替换后结果
      *
      */
+    @Override
     public String replace(final String target, final ISensitiveWordReplace replace) {
         return iWordHandler.replace(target, replace);
     }
@@ -212,6 +207,7 @@ public class SensitiveWordDispatcher {
      * @return 替换后结果
      *
      */
+    @Override
     public String replace(final String target) {
         return this.replace(target, '*');
     }

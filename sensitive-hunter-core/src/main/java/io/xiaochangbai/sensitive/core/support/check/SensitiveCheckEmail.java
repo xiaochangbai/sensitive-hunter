@@ -11,17 +11,6 @@ import io.xiaochangbai.sensitive.common.annotation.ThreadSafe;
 /**
  * email 正则表达式检测实现。
  *
- * TODO: 这里暂时不实现邮箱后缀的实现。
- *
- * （1）命中结果应该有标记，属于哪一个验证模式命中
- * （2）后期优化方案可以是：
- * 如果数字后面紧跟的是邮箱后缀命中，则直接连接起来 num+email-suffix;
- * （3）邮箱后缀的去重
- * 邮箱后缀可以只处理为和 Num 构建，如果没有直接丢弃的模式。
- *
- * 也可以严格的保留下来。
- * xiaochangbai
- *
  */
 @ThreadSafe
 public class SensitiveCheckEmail implements ISensitiveCheck {

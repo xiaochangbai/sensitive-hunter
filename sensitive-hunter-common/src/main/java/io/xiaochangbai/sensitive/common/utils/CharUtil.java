@@ -9,24 +9,6 @@ public class CharUtil {
     private CharUtil() {
     }
 
-    public static boolean isEmpty(Character character) {
-        return character == null;
-    }
-
-
-
-    public static char toHalfWidth(char c) {
-        char resultChar = c;
-        if (c == 12288) {
-            resultChar = ' ';
-        } else if (c > '\uff00' && c < '｟') {
-            resultChar = (char)(c - 'ﻠ');
-        }
-
-        return resultChar;
-    }
-
-
 
 
     public static boolean isDigitOrLetter(char c) {
@@ -43,8 +25,8 @@ public class CharUtil {
 
 
 
-    public static String repeat(char replaceChar, int wordLength) {
-        if (!isEmpty(replaceChar) && wordLength > 0) {
+    public static String repeat(Character replaceChar, int wordLength) {
+        if (replaceChar!=null && wordLength > 0) {
             StringBuilder stringBuffer = new StringBuilder();
 
             for(int i = 0; i < wordLength; ++i) {

@@ -33,8 +33,7 @@ public class SensitiveCheckNum implements ISensitiveCheck {
                 lengthCount++;
 
                 // 满足结束的条件
-                boolean isCondition = isCondition(lengthCount);
-                if (isCondition) {
+                if (lengthCount>=wordContext.getSensitiveCheckNumLen()) {
                     // 只在匹配到结束的时候才记录长度，避免不完全匹配导致的问题。
                     actualLength = lengthCount;
 
@@ -52,14 +51,5 @@ public class SensitiveCheckNum implements ISensitiveCheck {
         return SensitiveCheckResult.of(actualLength, SensitiveCheckNum.class);
     }
 
-    /**
-     * 这里指定一个阈值条件
-     * @param lengthCount 长度
-     * @return 是否满足条件
-     *
-     */
-    protected boolean isCondition(final int lengthCount) {
-        return lengthCount >= 1000;
-    }
 
 }

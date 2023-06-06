@@ -32,6 +32,8 @@ public class SensitiveWordConfig extends WordContext{
 
 
     public SensitiveWordConfig() {
+        this.setIgnoreRepeat(false);
+        this.setSensitiveCheckNumLen(20);
         this.addSensitiveChecks(Instances.singleton(SensitiveCheckWord.class));
     }
 
@@ -42,8 +44,6 @@ public class SensitiveWordConfig extends WordContext{
      */
     public static SensitiveWordConfig defaultConfig() {
         SensitiveWordConfig sensitiveWordConfig = new SensitiveWordConfig();
-        sensitiveWordConfig.setIgnoreRepeat(false);
-        sensitiveWordConfig.setSensitiveCheckNumLen(20);
         sensitiveWordConfig.addWordAllows(new SystemDefaultWordAllow());
         sensitiveWordConfig.addWordDenys(new SystemDefaultWordDeny());
         return sensitiveWordConfig;
